@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "demo": "node scripts/demo.js",
     "setup:assistant": "node scripts/setup-assistant.js",
     "setup:phone": "node scripts/setup-phone.js"
   },
