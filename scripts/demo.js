@@ -159,6 +159,27 @@ const TOOLS = [
   },
 ];
 
+// ─── HTTPS agent (handles sandboxed environments with a managed HTTP proxy) ────
+// In environments where GLOBAL_AGENT_HTTP_PROXY is set (e.g. Claude Code
+// sandbox), all outbound TCP goes through an HTTP CONNECT proxy.  We use
+// https-proxy-agent v7 to build the tunnel.  rejectUnauthorized:false is
+// required here because the proxy presents the target server's real TLS cert
+// via SSL inspection; a Node.js cert-chain quirk causes verification to fail
+// without this flag even though the cert is legitimately trusted by the OS.
+function buildHttpsAgent() {
+  const proxyUrl = process.env.GLOBAL_AGENT_HTTP_PROXY
+                ?? process.env.HTTPS_PROXY
+                ?? process.env.https_proxy;
+  if (!proxyUrl) return undefined;
+  try {
+    const { HttpsProxyAgent } = require('https-proxy-agent');
+    return new HttpsProxyAgent(proxyUrl, { rejectUnauthorized: false });
+  } catch {
+    return undefined;
+  }
+}
+const HTTPS_AGENT = buildHttpsAgent();
+
 // ─── Claude API wrapper ────────────────────────────────────────────────────────
 async function callClaude(messages) {
   const { data } = await axios.post(
@@ -166,11 +187,13 @@ async function callClaude(messages) {
     { model: 'claude-opus-4-6', max_tokens: 512, system: SYSTEM_PROMPT, messages, tools: TOOLS },
     {
       headers: {
-        'x-api-key':        process.env.ANTHROPIC_API_KEY,
+        'x-api-key':         process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
         'content-type':      'application/json',
       },
       timeout: 40_000,
+      proxy: false,                                   // let httpsAgent handle routing
+      ...(HTTPS_AGENT && { httpsAgent: HTTPS_AGENT }),
     },
   );
   return data;
