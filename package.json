@@ -1,0 +1,26 @@
+{
+  "name": "calexo-hvac-voice-agent",
+  "version": "1.0.0",
+  "description": "Production HVAC customer service voice agent for Calexo HVAC – Vapi/Claude/HouseCall Pro/Twilio",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "setup:assistant": "node scripts/setup-assistant.js",
+    "setup:phone": "node scripts/setup-phone.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "helmet": "^7.1.0",
+    "twilio": "^5.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
